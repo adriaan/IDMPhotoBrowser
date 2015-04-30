@@ -1259,7 +1259,9 @@ NSLocalizedStringFromTableInBundle((key), nil, [NSBundle bundleWithPath:[[NSBund
             [self.activityViewController setCompletionHandler:^(NSString *activityType, BOOL completed) {
                 [selfBlock hideControlsAfterDelay];
                 selfBlock.activityViewController = nil;
-                [selfBlock.delegate photoBrowser:selfBlock didFinishSharingWithActivityType:activityType completed:completed];
+                if(selfBlock.delegate && [selfBlock.delegate respondsToSelector:@selector(photoBrowser:didFinishSharingWithActivityType:completed:)]){
+                    [selfBlock.delegate photoBrowser:selfBlock didFinishSharingWithActivityType:activityType completed:completed];
+                }
             }];
             
             [self presentViewController:self.activityViewController animated:YES completion:nil];
