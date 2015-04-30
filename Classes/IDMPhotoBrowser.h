@@ -30,6 +30,9 @@
 // Properties
 @property (nonatomic, strong) id <IDMPhotoBrowserDelegate> delegate;
 
+// Sharing
+@property (nonatomic, strong) NSArray *customActivities;
+
 // Toolbar customization
 @property (nonatomic) BOOL displayToolbar;
 @property (nonatomic) BOOL displayCounterLabel;
