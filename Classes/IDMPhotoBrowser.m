@@ -1251,6 +1251,9 @@ NSLocalizedStringFromTableInBundle((key), nil, [NSBundle bundleWithPath:[[NSBund
             if (photo.caption) [activityItems addObject:photo.caption];
             
             self.activityViewController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:self.customActivities];
+            if(_excludedActivities){
+                _activityViewController.excludedActivityTypes = _excludedActivities;
+            }
             
             __typeof__(self) __weak selfBlock = self;
             [self.activityViewController setCompletionHandler:^(NSString *activityType, BOOL completed) {

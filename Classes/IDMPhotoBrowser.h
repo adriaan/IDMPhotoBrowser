@@ -32,6 +32,7 @@
 
 // Sharing
 @property (nonatomic, strong) NSArray *customActivities;
+@property (nonatomic, strong) NSArray *excludedActivities;
 
 // Toolbar customization
 @property (nonatomic) BOOL displayToolbar;
