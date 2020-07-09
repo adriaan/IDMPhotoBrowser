@@ -34,8 +34,7 @@
 @implementation IDMPhoto
 
 // Properties
-@synthesize underlyingImage = _underlyingImage, 
-photoURL = _photoURL,
+@synthesize underlyingImage = _underlyingImage,
 caption = _caption;
 
 #pragma mark Class Methods
@@ -46,10 +45,6 @@ caption = _caption;
 
 + (IDMPhoto *)photoWithFilePath:(NSString *)path {
 	return [[IDMPhoto alloc] initWithFilePath:path];
-}
-
-+ (IDMPhoto *)photoWithURL:(NSURL *)url {
-	return [[IDMPhoto alloc] initWithURL:url];
 }
 
 + (NSArray *)photosWithImages:(NSArray *)imagesArray {
@@ -78,23 +73,6 @@ caption = _caption;
     return photos;
 }
 
-+ (NSArray *)photosWithURLs:(NSArray *)urlsArray {
-    NSMutableArray *photos = [NSMutableArray arrayWithCapacity:urlsArray.count];
-    
-    for (id url in urlsArray) {
-        if ([url isKindOfClass:[NSURL class]]) {
-            IDMPhoto *photo = [IDMPhoto photoWithURL:url];
-            [photos addObject:photo];
-        }
-        else if ([url isKindOfClass:[NSString class]]) {
-            IDMPhoto *photo = [IDMPhoto photoWithURL:[NSURL URLWithString:url]];
-            [photos addObject:photo];
-        }
-    }
-    
-    return photos;
-}
-
 #pragma mark NSObject
 
 - (id)initWithImage:(UIImage *)image {
@@ -111,13 +89,6 @@ caption = _caption;
 	return self;
 }
 
-- (id)initWithURL:(NSURL *)url {
-	if ((self = [super init])) {
-		_photoURL = [url copy];
-	}
-	return self;
-}
-
 #pragma mark IDMPhoto Protocol Methods
 
 - (UIImage *)underlyingImage {
@@ -130,38 +101,13 @@ caption = _caption;
     if (self.underlyingImage) {
         // Image already loaded
         [self imageLoadingComplete];
+    } else if (_photoPath) {
+        // Load async from file
+        [self performSelectorInBackground:@selector(loadImageFromFileAsync) withObject:nil];
     } else {
-        if (_photoPath) {
-            // Load async from file
-            [self performSelectorInBackground:@selector(loadImageFromFileAsync) withObject:nil];
-        } else if (_photoURL) {
-            // Load async from web (using AFNetworking)
-            NSURLRequest *request = [[NSURLRequest alloc] initWithURL:_photoURL
-                                                          cachePolicy:NSURLRequestReturnCacheDataElseLoad
-                                                      timeoutInterval:0];
-            
-            AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:request];
-            op.responseSerializer = [AFImageResponseSerializer serializer];
-
-            [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-                UIImage *image = responseObject;
-                self.underlyingImage = image;
-                [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
-            } failure:^(AFHTTPRequestOperation *operation, NSError *error) { }];
-            
-            [op setDownloadProgressBlock:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
-                CGFloat progress = ((CGFloat)totalBytesRead)/((CGFloat)totalBytesExpectedToRead);
-                if (self.progressUpdateBlock) {
-                    self.progressUpdateBlock(progress);
-                }
-            }];
-            
-            [[NSOperationQueue mainQueue] addOperation:op];
-        } else {
-            // Failed - no source
-            self.underlyingImage = nil;
-            [self imageLoadingComplete];
-        }
+        // Failed - no source
+        self.underlyingImage = nil;
+        [self imageLoadingComplete];
     }
 }
 
